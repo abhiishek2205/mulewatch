@@ -21,6 +21,9 @@ def load_edges(parquet, start, end, fx):
     """Collapse repeated transfers between the same pair into one edge with a count and a USD total."""
     con = duckdb.connect()
     con.execute("SET enable_progress_bar = false")
+    # One thread and a fixed ORDER BY: the graph is then built in the same order every run, so
+    # PageRank's floating-point sums (and everything downstream) are exactly reproducible
+    con.execute("SET threads = 1")
     con.register("fx", fx)
     return con.execute("""
         SELECT t.src, t.dst,
@@ -31,6 +34,7 @@ def load_edges(parquet, start, end, fx):
         WHERE t.ts >= $start AND t.ts < $end
           AND t.src <> t.dst                        -- self-transfers are not money moving between accounts
         GROUP BY t.src, t.dst
+        ORDER BY t.src, t.dst
     """, {"parquet": parquet, "start": start, "end": end}).df()
 
 

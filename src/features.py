@@ -37,6 +37,10 @@ def compute_features(parquet, start, end, fx, settings):
     """Run sql/features.sql for one window and return a DataFrame with one row per account."""
     con = duckdb.connect()
     con.execute("SET enable_progress_bar = false")
+    # One thread = numbers are always added in the same order. With parallel threads the order varies,
+    # and floating-point addition then differs in the last digits from run to run, which was enough to
+    # change gradient boosting's bins and flip a close tuning choice. Slower, but exactly reproducible.
+    con.execute("SET threads = 1")
     con.register("fx_df", fx)
     con.execute("CREATE TABLE fx AS SELECT currency, usd_per_unit FROM fx_df")
     params = {
