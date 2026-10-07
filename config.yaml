@@ -24,6 +24,39 @@ features:
   round_amount_multiple: 100   # "round" = whole multiple of this, in the transfer's own currency
   pass_through_ratio_cap: 10   # out/in can explode when in is tiny; cap so a few accounts don't dominate scaling
 
+# Phase 3 rules. Thresholds were proposed from TRAINING percentiles and chosen in Phase 3
+# (evidence: notebooks/02_rules.ipynb). Counts are per day so the 6-day train window and
+# 4-day test window mean the same thing.
+rules:
+  R1_RAPID_PASS_THROUGH:
+    max_dwell_hours: 48            # strictly less than; mules in this simulator hold money ~1 day
+    min_pass_through_ratio: 0.8    # forwards 80% to 120% of what it receives (inclusive)
+    max_pass_through_ratio: 1.2
+  R2_FAN_IN:
+    min_fan_in_per_day: 1.0        # 6 distinct senders in 6 days, about p99 of active accounts
+  R3_FAN_OUT:
+    min_fan_out_per_day: 1.333     # 8 distinct receivers in 6 days, about p99 of active accounts
+  R4_NEW_AND_BURSTY:
+    min_first_seen_frac: 0.5       # first appears in the second half of the window
+    min_burst_share: 0.8           # 80%+ of its transfers fall in its busiest 24 hours
+    min_txn_per_day: 0.5           # 3+ transfers in 6 days; burst is meaningless for 1-2 transfers
+  R5_HIGH_RISK_CHANNEL:
+    min_cash_bitcoin_share: 0.5
+  R6_CROSS_BANK_HOPS:
+    min_cross_bank_out_share: 1.0  # every outgoing transfer goes to another bank
+    min_out_per_day: 0.5           # 3+ outgoing transfers in 6 days, so it is a pattern, not one payment
+
+  # Rules-only baseline score = sum of weights of the rules that fire.
+  # Weight = training lift (precision / base rate), rounded. R5 and R6 had lift ~0.1 and ~2 on
+  # this data: they stay as reason codes but get weight 0 so they don't add noise to the ranking.
+  weights:
+    R1_RAPID_PASS_THROUGH: 16
+    R2_FAN_IN: 6
+    R3_FAN_OUT: 4
+    R4_NEW_AND_BURSTY: 17
+    R5_HIGH_RISK_CHANNEL: 0
+    R6_CROSS_BANK_HOPS: 0
+
 # Phase 5 evaluation. Cost numbers are ASSUMPTIONS, not bank figures.
 alerts_per_day: 50
 cost_per_review_inr: 500

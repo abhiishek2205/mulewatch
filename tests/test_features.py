@@ -7,26 +7,11 @@ import pandas as pd
 import pytest
 
 from src.features import compute_features, compute_fx_rates
+from toy import txn, write_parquet
 
 START, END = "2022-09-01", "2022-09-07"   # 6-day window, like the training split
 SETTINGS = {"dwell_fill_hours": 168, "round_amount_multiple": 100, "pass_through_ratio_cap": 10}
 USD_ONLY = pd.DataFrame({"currency": ["US Dollar"], "usd_per_unit": [1.0]})
-
-
-def txn(ts, src, dst, amount, fmt="ACH", paid_ccy="US Dollar", recv_ccy="US Dollar", recv_amount=None):
-    return {
-        "ts": pd.Timestamp(ts), "src": src, "dst": dst,
-        "from_bank": src.split("_")[0], "to_bank": dst.split("_")[0],
-        "amount_received": amount if recv_amount is None else recv_amount, "receiving_currency": recv_ccy,
-        "amount_paid": amount, "payment_currency": paid_ccy,
-        "payment_format": fmt, "is_laundering": 0,
-    }
-
-
-def write_parquet(rows, tmp_path):
-    path = tmp_path / "toy.parquet"
-    pd.DataFrame(rows).to_parquet(path, index=False)
-    return str(path).replace("\\", "/")
 
 
 ACCOUNT_M = [
