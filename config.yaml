@@ -18,6 +18,12 @@ split:
   cut_date: "2022-09-07"     # first day of TEST; train = Sep 1-6, test = Sep 7-10
   data_end: "2022-09-11"
 
+# Phase 2 feature settings
+features:
+  dwell_fill_hours: 168        # dwell time for accounts with no in->out pair: one week, longer than any window
+  round_amount_multiple: 100   # "round" = whole multiple of this, in the transfer's own currency
+  pass_through_ratio_cap: 10   # out/in can explode when in is tiny; cap so a few accounts don't dominate scaling
+
 # Phase 5 evaluation. Cost numbers are ASSUMPTIONS, not bank figures.
 alerts_per_day: 50
 cost_per_review_inr: 500
