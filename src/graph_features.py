@@ -11,7 +11,7 @@ import networkx as nx
 import pandas as pd
 
 from src.features import window_days
-from src.load import load_config, window_bounds
+from src.load import SPLITS, load_config, window_bounds
 from src.rules import fire_rules
 
 CORE_RULES = ["R1_RAPID_PASS_THROUGH", "R2_FAN_IN", "R3_FAN_OUT", "R4_NEW_AND_BURSTY"]
@@ -135,7 +135,7 @@ def sanity_checks(graph_feats, features, graph_nodes):
 if __name__ == "__main__":
     cfg = load_config()
     fx = pd.read_csv("data/processed/fx_rates.csv")
-    for split in ["train", "test"]:
+    for split in SPLITS:
         feats, info = build_graph_features(cfg, split, fx)
         sanity_checks(feats, pd.read_parquet(f"data/processed/features_{split}.parquet"), info["graph_nodes"])
         feats.to_parquet(f"data/processed/graph_features_{split}.parquet", index=False)

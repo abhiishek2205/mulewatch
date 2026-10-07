@@ -17,6 +17,9 @@ split:
   data_start: "2022-09-01"
   cut_date: "2022-09-07"     # first day of TEST; train = Sep 1-6, test = Sep 7-10
   data_end: "2022-09-11"
+  # Phase 5 tuning: the training period split again by time.
+  # inner_train = Sep 1-4 (models learn), validation = Sep 5-6 (settings and cost cut-off chosen)
+  validation_start: "2022-09-05"
 
 # Phase 2 feature settings
 features:

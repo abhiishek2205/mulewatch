@@ -102,14 +102,22 @@ def parse_patterns(patterns_path):
     return pd.DataFrame(rows)
 
 
+# inner_train + validation split the TRAINING period again by time, for tuning without touching test
+SPLITS = ["train", "test", "inner_train", "validation"]
+
+
 def window_bounds(cfg, split):
-    """Return (start, end) for 'train' or 'test'; start inclusive, end exclusive."""
+    """Return (start, end) for a split; start inclusive, end exclusive."""
     s = cfg["split"]
-    if split == "train":
-        return s["data_start"], s["cut_date"]
-    if split == "test":
-        return s["cut_date"], s["data_end"]
-    raise ValueError(f"Unknown split: {split}")
+    bounds = {
+        "train": (s["data_start"], s["cut_date"]),
+        "test": (s["cut_date"], s["data_end"]),
+        "inner_train": (s["data_start"], s["validation_start"]),
+        "validation": (s["validation_start"], s["cut_date"]),
+    }
+    if split not in bounds:
+        raise ValueError(f"Unknown split: {split}")
+    return bounds[split]
 
 
 def build_labels(cfg, split):
@@ -127,6 +135,6 @@ if __name__ == "__main__":
     cfg = load_config()
     build_parquet(cfg["data"]["raw_csv"], cfg["data"]["transactions_parquet"])
     print("Wrote", cfg["data"]["transactions_parquet"])
-    for split in ["train", "test"]:
+    for split in SPLITS:
         labels = build_labels(cfg, split)
         print(f"{split}: {len(labels)} accounts, {labels.is_mule.sum()} mules, {labels.is_grey.sum()} grey")

@@ -8,7 +8,7 @@ import duckdb
 import numpy as np
 import pandas as pd
 
-from src.load import load_config, window_bounds
+from src.load import SPLITS, load_config, window_bounds
 
 SQL_DIR = Path("sql")
 
@@ -125,7 +125,7 @@ def build_all(cfg):
     fx.to_csv("data/processed/fx_rates.csv", index=False)
 
     out = {}
-    for split in ["train", "test"]:
+    for split in SPLITS:
         start, end = window_bounds(cfg, split)
         features = compute_features(parquet, start, end, fx, settings)
         labels = pd.read_parquet(f"data/processed/labels_{split}.parquet")
