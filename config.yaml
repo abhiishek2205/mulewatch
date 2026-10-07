@@ -5,10 +5,18 @@ data:
   patterns_txt: data/raw/HI-Small_Patterns.txt
   transactions_parquet: data/processed/transactions.parquet
 
-# Decided in Phase 1 (filled in after reviewing the EDA)
-label: null          # "A_involved" or "B_pass_through"
+# Decided in Phase 1 (see notebooks/01_explore.ipynb)
+# Label B: an account is a mule if, inside the window, it both received and sent
+# at least one laundering transfer (self-transfers excluded).
+label: B_pass_through
+
+# Time-based split. Start dates are inclusive, end dates exclusive.
+# data_end drops Sep 11-18: normal customers stop there and only laundering
+# chains continue (a simulator artifact that would leak "active late = criminal").
 split:
-  cut_date: null     # first day of the TEST window, e.g. "2022-09-08"
+  data_start: "2022-09-01"
+  cut_date: "2022-09-07"     # first day of TEST; train = Sep 1-6, test = Sep 7-10
+  data_end: "2022-09-11"
 
 # Phase 5 evaluation. Cost numbers are ASSUMPTIONS, not bank figures.
 alerts_per_day: 50

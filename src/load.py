@@ -102,7 +102,31 @@ def parse_patterns(patterns_path):
     return pd.DataFrame(rows)
 
 
+def window_bounds(cfg, split):
+    """Return (start, end) for 'train' or 'test'; start inclusive, end exclusive."""
+    s = cfg["split"]
+    if split == "train":
+        return s["data_start"], s["cut_date"]
+    if split == "test":
+        return s["cut_date"], s["data_end"]
+    raise ValueError(f"Unknown split: {split}")
+
+
+def build_labels(cfg, split):
+    """Label every account active in the split's window, using sql/labels.sql."""
+    start, end = window_bounds(cfg, split)
+    sql = Path("sql/labels.sql").read_text()
+    params = {"parquet": cfg["data"]["transactions_parquet"], "start": start, "end": end}
+    labels = duckdb.connect().execute(sql, params).df()
+    out = Path(f"data/processed/labels_{split}.parquet")
+    labels.to_parquet(out, index=False)
+    return labels
+
+
 if __name__ == "__main__":
     cfg = load_config()
     build_parquet(cfg["data"]["raw_csv"], cfg["data"]["transactions_parquet"])
     print("Wrote", cfg["data"]["transactions_parquet"])
+    for split in ["train", "test"]:
+        labels = build_labels(cfg, split)
+        print(f"{split}: {len(labels)} accounts, {labels.is_mule.sum()} mules, {labels.is_grey.sum()} grey")
