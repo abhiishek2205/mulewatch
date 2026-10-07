@@ -1,0 +1,16 @@
+# All tunable choices live here so they are visible and auditable in one place.
+
+data:
+  raw_csv: data/raw/HI-Small_Trans.csv
+  patterns_txt: data/raw/HI-Small_Patterns.txt
+  transactions_parquet: data/processed/transactions.parquet
+
+# Decided in Phase 1 (filled in after reviewing the EDA)
+label: null          # "A_involved" or "B_pass_through"
+split:
+  cut_date: null     # first day of the TEST window, e.g. "2022-09-08"
+
+# Phase 5 evaluation. Cost numbers are ASSUMPTIONS, not bank figures.
+alerts_per_day: 50
+cost_per_review_inr: 500
+cost_per_missed_mule_inr: 50000

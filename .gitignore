@@ -1,0 +1,13 @@
+# Raw and processed data stay local: large files, and the raw data is not ours to redistribute
+data/raw/
+data/processed/
+
+# Python / Jupyter clutter
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+.pytest_cache/
+.venv/
+
+# Personal working notes for the AI assistant, kept local only
+CLAUDE.md
