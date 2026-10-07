@@ -57,6 +57,16 @@ rules:
     R5_HIGH_RISK_CHANNEL: 0
     R6_CROSS_BANK_HOPS: 0
 
+# Phase 4 graph features. In/out/weighted degree are NOT recomputed: they equal
+# fan_in_per_day, fan_out_per_day and in/out_usd_per_day from Phase 2.
+graph:
+  pagerank_alpha: 0.85              # standard damping: 15% chance of "jumping" to a random account
+  cycle_max_length: 4               # loops of 2, 3 or 4 hops
+  cycle_hub_max_degree: 72          # accounts with more counterparties (top 0.01% in train) are not
+                                    # followed in the loop search: they make it explode and loops through
+                                    # payment-processor-sized hubs mean little
+  cycle_time_limit_minutes: 20      # per window; if exceeded, the cycle feature is dropped and reported
+
 # Phase 5 evaluation. Cost numbers are ASSUMPTIONS, not bank figures.
 alerts_per_day: 50
 cost_per_review_inr: 500
